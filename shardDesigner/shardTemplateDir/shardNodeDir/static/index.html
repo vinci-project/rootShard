@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Cover Template for Bootstrap</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/cover.css" rel="stylesheet">
+  </head>
+
+  <body class="text-center">
+
+    <div class="cover-container d-flex p-3 flex-column">
+      <header class="masthead" style = "margin-bottom:100px;">
+        <div class="inner">
+          <h3 class="masthead-brand"  style = "margin-right:200px;"><%SHARD NAME%></h3>
+          <nav class="nav nav-masthead justify-content-center">
+            <a class="nav-link active" id = "navPrivate" onClick = "$('.zones').hide(); $('#privateZone').show();" href="#">KEYS</a>
+            <a class="nav-link active" id = "navStart" onClick = "$('.zones').hide(); $('#startZone').show();" href="#">START</a>
+          </nav>
+        </div>
+          </header>
+        <div class = "zones" id = "privateZone">
+        <img class="mb-4" src="img/nlogo.png"  style = "margin:10px auto;" alt="" width="90" height="90">
+        <h1 class="h3 mb-3 font-weight-normal">Enter your privateKey or generate new</h1>
+        <div class = "row" style = "margin-bottom:10px;">
+            <input type="text" id="inputPrivate" class="form-control" placeholder="Private key" autofocus/>
+        </div>
+
+          <button class="btn btn-md btn-light" style = "margin-bottom:30px;" onClick = "generateKeys()">Generate private/public keys</button>
+
+        <div class = "row" style = "margin-bottom:10px;">
+        <input type="password" id="inputPassword1" class="form-control" placeholder="Password"/>
+        </div>
+        <div class = "row" style = "margin-bottom:10px;">
+        <input type="password" id="inputPassword2" class="form-control form-control-danger" placeholder="re Password" />
+        </div>
+
+        <button class="btn btn-lg btn-primary btn-block" type="button" onClick = "sendKeys();">Encrypt keys with password</button>
+      </div>
+        <div class = "zones" id = "startZone">
+           <button class="btn btn-lg btn-success" type="button" data-toggle="modal" data-target="#exampleModal">START</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content" style = "margin-top:100px;background-color:#222;color:#ccc;padding-bottom:10px;border:solid 1px #ccc;">
+          <div class="modal-header">
+            <h5 class="modal-title" style = "margin:0px auto;" id="exampleModalLabel">ENTER YOUR PASSWORD FOR START NODE</h5>
+          </div>
+          <div class="modal-body">
+              <input type="password" id="inputPassword3" class="form-control form-control-danger" placeholder="Password for decrypt your Private key" />
+          </div>
+          <div>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onClick = "startNode();">START NODE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')</script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+
+        $(".zones").hide();
+        $("#privateZone").show();
+
+        function generateKeys(){
+              $.ajax({
+                url: "/start/generatePair",
+                async: false,
+                type: "GET",
+                dataType: 'json',
+                success: function(json){
+                    $("#inputPrivate").val(json.PRIVATE)
+                }
+              });
+        }
+
+        function sendKeys(){
+              if ($("#inputPassword1").val() == $("#inputPassword2").val()){
+                  $.ajax({
+                    url: "/start/setPrivate?private=" + $("#inputPrivate").val() + "&password=" + $("#inputPassword1").val(),
+                    async: false,
+                    type: "GET",
+                    dataType: 'json',
+                    success: function(json){
+                        $("#inputPrivate").val(json.PRIVATE)
+                    }
+                  });
+              }else{
+                    $("#inputPassword2").addClass("is-invalid")
+              }
+        }
+
+        var privateIsCreate = false;
+
+        function checkPrivate(){
+             $.ajax({
+                url: "/start/getPrivateStatus",
+                async: false,
+                type: "GET",
+                dataType: 'json',
+                success: function(json){
+                    if (json.PRIVATE == true){
+                      privateIsCreate = true;
+                      $("#navPrivate").css("border-color", "green");
+                    }else{
+                      privateIsCreate = false;
+                      $("#navPrivate").css("border-color", "red");
+                    }
+                }
+             });
+        }  setInterval(checkPrivate, 2000);
+
+        function startNode(){
+                  $.ajax({
+                    url: "/start/startSlave?password=" + $("#inputPassword3").val(),
+                    async: false,
+                    type: "GET",
+                    dataType: 'json',
+                    success: function(json){
+
+                    }
+                  });
+        }
+
+    </script>
+  </body>
+</html>
